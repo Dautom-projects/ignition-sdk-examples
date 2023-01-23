@@ -12,10 +12,12 @@ public class GatewayScriptModule extends AbstractScriptModule {
     }
 
     @Override
-    protected GatewayContext browseTagsImpl() {
+    protected String browseTagsImpl() {
         GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
 
-        return context;
+        return provider.toString();
     }
 
 }
