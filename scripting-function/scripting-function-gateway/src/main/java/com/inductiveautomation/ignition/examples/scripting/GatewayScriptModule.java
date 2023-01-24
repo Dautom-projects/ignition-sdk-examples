@@ -89,6 +89,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
         }
     }
 
+    @Override
     protected void editTagsImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
