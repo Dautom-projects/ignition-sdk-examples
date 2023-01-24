@@ -24,6 +24,20 @@ public class ClientScriptModule extends AbstractScriptModule {
     protected void browseTagsImpl() throws Exception {
         rpc.browseTags();
     }
+    @Override
+    protected void writeReadTagValueImpl() throws Exception {
+        rpc.writeReadTagValue();
+    }
+
+    @Override
+    protected void writeReadTagPropertyImpl() throws Exception {
+        rpc.writeReadTagProperty();
+    }
+
+    @Override
+    protected void writeReadUdtParameterImpl() throws Exception {
+        rpc.writeReadUdtParameter();
+    }
 
     @Override
     protected void createTagsImpl() throws Exception {
