@@ -6,15 +6,10 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 public interface MathBlackBox {
 
     public int multiply(int arg0, int arg1);
-
     public void browseTags() throws Exception;
-
-    public void writeReadTagValue() throws Exception;
-
-    public void writeReadTagProperty() throws Exception;
-
-    public void writeReadUdtParameter() throws Exception;
-
     public void createTags() throws Exception;
-
+    public void writeReadTagValue() throws Exception;
+    public void writeReadTagProperty() throws Exception;
+    public void writeReadUdtParameter() throws Exception;
+    public void copyMoveRenameTag() throws Exception;
 }

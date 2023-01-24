@@ -19,29 +19,29 @@ public class ClientScriptModule extends AbstractScriptModule {
     protected int multiplyImpl(int arg0, int arg1) {
         return rpc.multiply(arg0, arg1);
     }
-
     @Override
     protected void browseTagsImpl() throws Exception {
         rpc.browseTags();
     }
     @Override
+    protected void createTagsImpl() throws Exception {
+        rpc.createTags();
+    }
+    @Override
     protected void writeReadTagValueImpl() throws Exception {
         rpc.writeReadTagValue();
     }
-
     @Override
     protected void writeReadTagPropertyImpl() throws Exception {
         rpc.writeReadTagProperty();
     }
-
     @Override
     protected void writeReadUdtParameterImpl() throws Exception {
         rpc.writeReadUdtParameter();
     }
-
     @Override
-    protected void createTagsImpl() throws Exception {
-        rpc.createTags();
+    protected void copyMoveRenameTagImpl() throws Exception {
+        rpc.copyMoveRenameTag();
     }
 
 }
