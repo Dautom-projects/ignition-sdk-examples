@@ -72,7 +72,8 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
-
+    //----------------------------Import Tags----------------------------
+    @Override
     protected void importTagsImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
