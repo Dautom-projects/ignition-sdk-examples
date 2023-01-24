@@ -71,7 +71,21 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
+    //----------------------------Request tag group execution----------------------------
+    @Override
+    protected void triggerTagGroupExecutionImpl() {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+        // Requests an extra execution of the Default tag group
+        if(provider instanceof ProviderContext) {
+            TagGroupManager groupManager = ((ProviderContext) provider).getTagGroupManager();
+            String nameTagProvider = "Default"; //Name tag provider to execution
+            groupManager.requestExecution(nameTagProvider);
+            //groupManager.requestExecution("Default");
 
+        }
 
+    }
 
 }
