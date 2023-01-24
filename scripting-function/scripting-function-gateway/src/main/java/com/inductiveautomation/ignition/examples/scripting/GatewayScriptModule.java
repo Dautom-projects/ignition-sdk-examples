@@ -3,6 +3,7 @@ package com.inductiveautomation.ignition.examples.scripting;
 import com.inductiveautomation.ignition.common.alarming.config.*;
 import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
 import com.inductiveautomation.ignition.common.browsing.Results;
+import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.config.BasicProperty;
 import com.inductiveautomation.ignition.common.config.Property;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -15,6 +16,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.scripts.TagEventScr
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.SQLQueryType;
 import com.inductiveautomation.ignition.common.tags.browsing.NodeDescription;
+import com.inductiveautomation.ignition.common.tags.config.CollisionPolicy;
 import com.inductiveautomation.ignition.common.tags.config.*;
 import com.inductiveautomation.ignition.common.tags.config.properties.WellKnownTagProps;
 import com.inductiveautomation.ignition.common.tags.config.types.DBTagTypeProperties;
@@ -31,6 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +60,39 @@ public class GatewayScriptModule extends AbstractScriptModule {
         logger.info("provider: " + provider);
     }
 
+    private void browseNode(TagProvider provider, TagPath parentPath) throws Exception {
+        Results<NodeDescription> results = provider.browseAsync(parentPath, BrowseFilter.NONE).get(30, TimeUnit.SECONDS);
+
+        if(results.getResultQuality().isNotGood()) {
+            throw new Exception("Bad quality results: "+ results.getResultQuality().toString());
+        }
+
+        Collection<NodeDescription> nodes = results.getResults();
+        StringBuilder structure = new StringBuilder();
+        for(int i = 0; i<parentPath.getPathLength(); i++) {
+            structure.append("\t");
+        }
+
+        String formatted = structure.toString() + "[%s] objectType=%s, dataType=%s, subTypeId=%s, currentValue=%s, displayFormat=%s, attributes=%s, hasChildren=%s";
+        for(NodeDescription node: nodes) {
+            String currentValue = node.getCurrentValue().getValue() != null ? node.getCurrentValue().getValue().toString(): "null";
+            String descr = String.format(formatted, node.getName(),
+                    node.getObjectType(),
+                    node.getDataType(),
+                    node.getSubTypeId(),
+                    currentValue,
+                    node.getDisplayFormat(),
+                    node.getAttributes().toString(),
+                    node.hasChildren());
+                    logger.info(descr);
+
+            // Browse child nodes, but not Document nodes such as UDT parameters
+            if(node.hasChildren() && DataType.Document != node.getDataType()) {
+                TagPath childPath = parentPath.getChildPath(node.getName());
+                browseNode(provider, childPath);
+            }
+        }
+    }
     protected void createTagsImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -245,40 +283,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
         }
     }
 
-    private void browseNode(TagProvider provider, TagPath parentPath) throws Exception {
-        Results<NodeDescription> results = provider.browseAsync(parentPath, BrowseFilter.NONE).get(30, TimeUnit.SECONDS);
-
-        if(results.getResultQuality().isNotGood()) {
-            throw new Exception("Bad quality results: "+ results.getResultQuality().toString());
-        }
-
-        Collection<NodeDescription> nodes = results.getResults();
-        StringBuilder structure = new StringBuilder();
-        for(int i = 0; i<parentPath.getPathLength(); i++) {
-            structure.append("\t");
-        }
-
-        String formatted = structure.toString() + "[%s] objectType=%s, dataType=%s, subTypeId=%s, currentValue=%s, displayFormat=%s, attributes=%s, hasChildren=%s";
-        for(NodeDescription node: nodes) {
-            String currentValue = node.getCurrentValue().getValue() != null ? node.getCurrentValue().getValue().toString(): "null";
-            String descr = String.format(formatted, node.getName(),
-                    node.getObjectType(),
-                    node.getDataType(),
-                    node.getSubTypeId(),
-                    currentValue,
-                    node.getDisplayFormat(),
-                    node.getAttributes().toString(),
-                    node.hasChildren());
-                    logger.info(descr);
-
-            // Browse child nodes, but not Document nodes such as UDT parameters
-            if(node.hasChildren() && DataType.Document != node.getDataType()) {
-                TagPath childPath = parentPath.getChildPath(node.getName());
-                browseNode(provider, childPath);
-            }
-        }
-    }
-
     protected void writeReadTagValueImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -363,6 +367,53 @@ public class GatewayScriptModule extends AbstractScriptModule {
             String qvValue = qv.getValue() != null ? qv.getValue().toString() : "null";
             logger.info("BasicUDT_OverrideInstance0 MyParam = " + qvValue);
         }
+    }
+    @Override
+    protected void copyMoveRenameTagImpl() throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+
+        // We are going thru the GatewayTagManager rather than a specific tag provider, so we must add the provider name
+        // to the front of the path.
+        TagPath memoryTag1 = TagPathParser.parse("[default]LevelOne_FolderA/MemoryTag1");
+        logger.info("Tag path to copy: " + memoryTag1);
+        TagPath destination = TagPathParser.parse("[default]LevelOne_FolderA");
+        logger.info("Path to the folder where the copied tag will be pasted (if it is the same folder, rename the tag): " + destination);
+
+        // Make a copy of LevelOne_FolderA/MemoryTag1
+        List<QualityCode> results = tagManager.moveTagsAsync(Arrays.asList(memoryTag1), destination, true, CollisionPolicy.Rename).get(30, TimeUnit.SECONDS);
+
+        QualityCode qc = results.get(0);
+        if (qc.isNotGood()) {
+            throw new Exception(String.format("Copy operation returned bad result '%s'", qc.toString()));
+        }
+
+        // Now move the newly copied tag to the root
+        TagPath memoryTag2 = TagPathParser.parse("[default]LevelOne_FolderA/MemoryTag2");
+        logger.info("Path of the tag to move: " + memoryTag2);
+        destination = TagPathParser.parse("[default]");
+        logger.info("Destination where the tag will be moved: " + destination);
+
+
+        results = tagManager.moveTagsAsync(Arrays.asList(memoryTag2), destination, false, CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);
+        qc = results.get(0);
+        if (qc.isNotGood()) {
+            throw new Exception(String.format("Move operation returned bad result '%s'", qc.toString()));
+        }
+
+        // Finally, rename MemoryTag2 to RootMemoryTag1
+        memoryTag2 = TagPathParser.parse("[default]MemoryTag2");
+        logger.info("Path of the tag to rename: " + memoryTag2);
+        String newName = "RootMemoryTag1"; // variable created
+        logger.info("New tag name: " + newName);
+        //results = tagManager.renameTag(memoryTag2, "RootMemoryTag1", CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);  ---replaced by line 110
+        results = tagManager.renameTag(memoryTag2, newName, CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);
+
+        qc = results.get(0);
+        if (qc.isNotGood()) {
+            throw new Exception(String.format("Rename operation returned bad result '%s'", qc.toString()));
+        }
+
     }
 
 
