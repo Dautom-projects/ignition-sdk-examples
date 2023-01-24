@@ -93,6 +93,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             if (result.isNotGood()) {
                 throw new Exception(String.format("Add tag operation returned bad result '%s'", result.toString()));
             }
+            logger.info("Imported tag status: " + result);
 
         }
 
@@ -107,6 +108,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             if (result.isNotGood()) {
                 throw new Exception(String.format("Add tag operation returned bad result '%s'", result.toString()));
             }
+            logger.info("Imported tag status: " + result);
 
         }
     }
