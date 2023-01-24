@@ -8,6 +8,8 @@ import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,5 +71,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
+
+
 
 }
