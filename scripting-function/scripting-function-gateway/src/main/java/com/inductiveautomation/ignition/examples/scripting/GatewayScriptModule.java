@@ -80,9 +80,11 @@ public class GatewayScriptModule extends AbstractScriptModule {
 
         List<TagPath> toDelete = new ArrayList<>();
         TagPath levelOne_FolderA = TagPathParser.parse("LevelOne_FolderA");
+        logger.info("Name of the folder to be deleted: " + levelOne_FolderA);
         toDelete.add(levelOne_FolderA);
 
         TagPath tinyUdtOverrideInstance = TagPathParser.parse("TinyUdt_OverrideInstance");
+        logger.info("Name of the tag to be deleted: " + tinyUdtOverrideInstance);
         toDelete.add(tinyUdtOverrideInstance);
 
 
