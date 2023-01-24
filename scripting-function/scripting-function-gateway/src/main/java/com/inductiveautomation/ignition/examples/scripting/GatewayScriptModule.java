@@ -9,6 +9,8 @@ import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -16,21 +18,22 @@ import java.util.concurrent.TimeUnit;
 
 public class GatewayScriptModule extends AbstractScriptModule {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     protected int multiplyImpl(int arg0, int arg1) {
         return arg0 * arg1;
     }
 
     @Override
-    protected String browseTagsImpl() throws Exception{
+    protected void browseTagsImpl() throws Exception{
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
         TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
 
         TagPath root = TagPathParser.parse("");
         browseNode(provider, root);
-
-        return provider.toString();
+        logger.info("provider: " + provider);
     }
 
     private void browseNode(TagProvider provider, TagPath parentPath) throws Exception {
@@ -57,7 +60,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
                     node.getDisplayFormat(),
                     node.getAttributes().toString(),
                     node.hasChildren());
-            // logger.info(descr);
+                    logger.info(descr);
 
             // Browse child nodes, but not Document nodes such as UDT parameters
             if(node.hasChildren() && DataType.Document != node.getDataType()) {
