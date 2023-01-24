@@ -9,4 +9,10 @@ public interface MathBlackBox {
 
     public void browseTags() throws Exception;
 
+    public void writeReadTagValue() throws Exception;
+
+    public void writeReadTagProperty() throws Exception;
+
+    public void writeReadUdtParameter() throws Exception;
+
 }
