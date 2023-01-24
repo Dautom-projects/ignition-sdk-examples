@@ -9,4 +9,7 @@ public interface MathBlackBox {
 
     public void browseTags() throws Exception;
 
+    public void deleteTags() throws Exception;
+
+
 }
