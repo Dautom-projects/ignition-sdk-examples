@@ -83,7 +83,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
         // We are going thru the GatewayTagManager rather than a specific tag provider, so we must add the provider name
         // to the front of the path.
         TagPath memoryTag1 = TagPathParser.parse("[default]LevelOne_FolderA/MemoryTag1");
+        logger.info("Tag path to copy: " + memoryTag1);
         TagPath destination = TagPathParser.parse("[default]LevelOne_FolderA");
+        logger.info("Path to the folder where the copied tag will be pasted (if it is the same folder, rename the tag): " + destination);
 
         // Make a copy of LevelOne_FolderA/MemoryTag1
         List<QualityCode> results = tagManager.moveTagsAsync(Arrays.asList(memoryTag1), destination, true, CollisionPolicy.Rename).get(30, TimeUnit.SECONDS);
@@ -95,7 +97,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
 
         // Now move the newly copied tag to the root
         TagPath memoryTag2 = TagPathParser.parse("[default]LevelOne_FolderA/MemoryTag2");
+        logger.info("Path of the tag to move: " + memoryTag2);
         destination = TagPathParser.parse("[default]");
+        logger.info("Destination where the tag will be moved: " + destination);
 
 
         results = tagManager.moveTagsAsync(Arrays.asList(memoryTag2), destination, false, CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);
@@ -106,7 +110,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
 
         // Finally, rename MemoryTag2 to RootMemoryTag1
         memoryTag2 = TagPathParser.parse("[default]MemoryTag2");
+        logger.info("Path of the tag to rename: " + memoryTag2);
         String newName = "RootMemoryTag1"; // variable created
+        logger.info("New tag name: " + newName);
         //results = tagManager.renameTag(memoryTag2, "RootMemoryTag1", CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);  ---replaced by line 110
         results = tagManager.renameTag(memoryTag2, newName, CollisionPolicy.Abort).get(30, TimeUnit.SECONDS);
 
