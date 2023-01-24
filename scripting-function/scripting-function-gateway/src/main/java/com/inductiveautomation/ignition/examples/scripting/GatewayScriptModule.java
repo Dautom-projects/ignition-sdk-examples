@@ -113,7 +113,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             throw new Exception(String.format("MemoryTag0 cannot be read, quality=" + qv.getQuality().toString()));
         } else {
             String qvValue = qv.getValue() != null ? qv.getValue().toString(): "null";
-            logger.info("MemoryTag0 value='%s'", qvValue);
+            logger.info("MemoryTag0 value = " + qvValue);
         }
     }
 
@@ -142,7 +142,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             throw new Exception(String.format("MemoryTag1.documentation cannot be read, quality=" + qv.getQuality().toString()));
         } else {
             String qvValue = qv.getValue() != null ? qv.getValue().toString(): "null";
-            logger.info("MemoryTag1 documentation='%s'", qvValue);
+            logger.info("MemoryTag1 documentation = " + qvValue);
         }
     }
 
@@ -170,7 +170,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
             throw new Exception(String.format("BasicUDT_OverrideInstance0/MyParam cannot be read, quality=" + qv.getQuality().toString()));
         } else {
             String qvValue = qv.getValue() != null ? qv.getValue().toString() : "null";
-            logger.info("BasicUDT_OverrideInstance0 MyParam ='%s'", qvValue);
+            logger.info("BasicUDT_OverrideInstance0 MyParam = " + qvValue);
         }
     }
 
