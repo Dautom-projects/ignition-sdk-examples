@@ -72,6 +72,8 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
+    ////----------------------------Delete Tags----------------------------
+    @Override
     protected void deleteTagsImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
