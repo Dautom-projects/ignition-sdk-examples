@@ -33,7 +33,14 @@ public abstract class AbstractScriptModule implements MathBlackBox {
         browseTagsImpl();
     }
 
+    @Override
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
+    public void createTags() throws Exception {
+        createTagsImpl();
+    }
+
     protected abstract int multiplyImpl(int arg0, int arg1);
     protected abstract void browseTagsImpl() throws Exception;
+    protected abstract void createTagsImpl() throws Exception;
 
 }
