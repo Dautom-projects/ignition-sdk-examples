@@ -25,6 +25,11 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.browseTags();
     }
 
+    @Override
+    protected void importTagsImpl() throws Exception {
+        rpc.importTags();
+    }
+
 
 
 }
