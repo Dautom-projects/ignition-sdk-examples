@@ -89,10 +89,11 @@ public class GatewayScriptModule extends AbstractScriptModule {
         }
     }
 
-    protected void createTags() throws Exception {
+    protected void createTagsImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
         TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+        logger.info("provider: " + provider);
 
         List<TagConfiguration> newTagConfigs = new ArrayList<>();
 
@@ -101,6 +102,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
         TagConfiguration tagConfig = BasicTagConfiguration.createNew(levelOneFolderA);
         tagConfig.setType(TagObjectType.Folder);
         newTagConfigs.add(tagConfig);
+        logger.info("tagConfig: " + tagConfig);
 
         // Create a simple memory tag
         TagPath memoryTag0 = TagPathParser.parse("MemoryTag0");
@@ -110,6 +112,8 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(WellKnownTagProps.DataType, DataType.Int4);
         tagConfig.set(WellKnownTagProps.Value, new BasicQualifiedValue(42));
         newTagConfigs.add(tagConfig);
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + memoryTag0);
 
         // Create a more complex memory tag, put it under LevelOne_FolderA
         TagPath memoryTag1 = TagPathParser.parse("LevelOne_FolderA/MemoryTag1");
@@ -120,6 +124,8 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(WellKnownTagProps.Value, new BasicQualifiedValue(1));
         tagConfig.set(WellKnownTagProps.Documentation, "This is MemoryTag1");
         tagConfig.set(WellKnownTagProps.Tooltip, "MemoryTag1 tooltip");
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + memoryTag1);
 
         // Alarm configuration
         AlarmConfiguration alarmConfig = new BasicAlarmConfiguration();
@@ -137,8 +143,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
         alarmConfig.add(alarmTwoDefinition);
         tagConfig.set(WellKnownTagProps.Alarms, alarmConfig);
 
+
         // Tag permissions
-        Map<ZoneRole, Boolean> permissionsMap = new HashMap<>();
+        Map<TagPermissionsModel.ZoneRole, Boolean> permissionsMap = new HashMap<>();
         TagPermissionsModel.ZoneRole zoneRole = new TagPermissionsModel.ZoneRole();
         zoneRole.setRole("Administrator");
         zoneRole.setZone("default");
@@ -162,6 +169,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(doubleProp, 3.1415d);
         newTagConfigs.add(tagConfig);
 
+
         // Create an expression tag
         TagPath expressionTag0 = TagPathParser.parse("ExpressionTag0");
         tagConfig = BasicTagConfiguration.createNew(expressionTag0);
@@ -170,6 +178,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(WellKnownTagProps.FormatString, "yyyy-MM-dd h:mm:ss aa");
         tagConfig.set(WellKnownTagProps.ValueSource, ExpressionTypeProperties.TAG_TYPE);
         tagConfig.set(ExpressionTypeProperties.Expression, "now(1000)");
+        newTagConfigs.add(tagConfig); // Command added  to salve tag configuration in the tag list
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + expressionTag0);
 
         // Create a query tag
         TagPath queryTag0 = TagPathParser.parse("QueryTag0");
@@ -182,6 +193,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(DBTagTypeProperties.QueryType, SQLQueryType.Select);
         tagConfig.set(DBTagTypeProperties.QueryDatasource, "my_datasource");
         tagConfig.set(DBTagTypeProperties.Query, "select now()");
+        newTagConfigs.add(tagConfig); // Command added  to salve tag configuration in the tag list
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + queryTag0);
 
         // Create an OPC tag
         TagPath opcTag0 = TagPathParser.parse("OpcTag0");
@@ -191,12 +205,17 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(WellKnownTagProps.ValueSource, OpcTagTypeProperties.TAG_TYPE);
         tagConfig.set(OpcTagTypeProperties.OPCServer, "Ignition OPC UA Server");
         tagConfig.set(OpcTagTypeProperties.OPCItemPath, "ns=1;s=[GenericSimulator]_Meta:Writeable/WriteableFloat1");
+        newTagConfigs.add(tagConfig); // Command added  to salve tag configuration in the tag list
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + opcTag0);
 
         // Create simple UDT definition and add a memory tag
         TagPath tinyUdtDef = TagPathParser.parse("_types_/TinyUdtDef");
         tagConfig = BasicTagConfiguration.createNew(tinyUdtDef);
         tagConfig.setType(TagObjectType.UdtType);
         newTagConfigs.add(tagConfig);
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + tinyUdtDef);
 
         TagPath udtDefMember = TagPathParser.parse("_types_/TinyUdtDef/MemoryTagMember");
         tagConfig = BasicTagConfiguration.createNew(udtDefMember);
@@ -204,6 +223,8 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.set(WellKnownTagProps.DataType, DataType.Int4);
         tagConfig.set(WellKnownTagProps.Value, new BasicQualifiedValue(1));
         newTagConfigs.add(tagConfig);
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + udtDefMember);
 
         // Create simple UDT instance
         TagPath udtInstance = TagPathParser.parse("TinyUdt_Instance");
@@ -211,11 +232,15 @@ public class GatewayScriptModule extends AbstractScriptModule {
         tagConfig.setType(TagObjectType.UdtInstance);
         tagConfig.set(WellKnownTagProps.TypeId, "TinyUdtDef");
         newTagConfigs.add(tagConfig);
+        logger.info("tagConfig: " + tagConfig);
+        logger.info("tag: " + udtInstance);
 
         CompletableFuture<List<QualityCode>> future =
                 provider.saveTagConfigsAsync(newTagConfigs, CollisionPolicy.Abort);
+        logger.info("future: " + future);
 
         List<QualityCode> results = future.get(30, TimeUnit.SECONDS);
+        logger.info("results: " + results);
 
         for (int i = 0; i < results.size(); i++) {
             QualityCode result = results.get(i);
@@ -223,6 +248,7 @@ public class GatewayScriptModule extends AbstractScriptModule {
                 throw new Exception(String.format("Add tag operation returned bad result for tag '%s'", newTagConfigs.get(i).getName()));
             }
         }
+        logger.info("result: " + results);
 
         newTagConfigs.clear();
 
