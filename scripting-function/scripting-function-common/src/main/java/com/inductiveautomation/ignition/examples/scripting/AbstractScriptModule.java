@@ -6,6 +6,8 @@ import com.inductiveautomation.ignition.common.script.hints.ScriptFunction;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
+import java.io.IOException;
+
 public abstract class AbstractScriptModule implements MathBlackBox {
 
     static {
@@ -27,11 +29,11 @@ public abstract class AbstractScriptModule implements MathBlackBox {
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public String browseTags(){
-            return browseTagsImpl();
+    public void browseTags() throws Exception {
+        browseTagsImpl();
     }
 
     protected abstract int multiplyImpl(int arg0, int arg1);
-    protected abstract String browseTagsImpl();
+    protected abstract void browseTagsImpl() throws Exception;
 
 }
