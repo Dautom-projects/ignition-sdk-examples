@@ -25,5 +25,9 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.browseTags();
     }
 
+    @Override
+    protected void copyMoveRenameTagImpl() throws Exception {
+        rpc.copyMoveRenameTag();
+    }
 
 }
