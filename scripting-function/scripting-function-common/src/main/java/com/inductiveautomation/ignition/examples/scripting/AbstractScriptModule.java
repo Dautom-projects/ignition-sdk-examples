@@ -33,6 +33,10 @@ public abstract class AbstractScriptModule implements MathBlackBox {
         browseTagsImpl();
     }
 
+    public void createTags() throws Exception {
+    createTagsImpl();
+    }
+
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
     public void writeReadTagValue() throws Exception {
@@ -56,5 +60,6 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     protected abstract void writeReadTagValueImpl() throws Exception;
     protected abstract void writeReadTagPropertyImpl() throws Exception;
     protected abstract void writeReadUdtParameterImpl() throws Exception;
+    protected abstract void createTagsImpl() throws Exception;
 
 }

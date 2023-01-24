@@ -15,4 +15,6 @@ public interface MathBlackBox {
 
     public void writeReadUdtParameter() throws Exception;
 
+    public void createTags() throws Exception;
+
 }

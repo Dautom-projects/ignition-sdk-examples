@@ -39,4 +39,9 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.writeReadUdtParameter();
     }
 
+    @Override
+    protected void createTagsImpl() throws Exception {
+        rpc.createTags();
+    }
+
 }
