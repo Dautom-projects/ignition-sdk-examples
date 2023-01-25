@@ -59,6 +59,11 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     public void deleteTags() throws Exception {
         deleteTagsImpl();
     }
+    @Override
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
+    public void editTags() throws Exception {
+        editTagsImpl();
+    }
 
     protected abstract int multiplyImpl(int arg0, int arg1);
     protected abstract void browseTagsImpl() throws Exception;
@@ -68,4 +73,6 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     protected abstract void writeReadUdtParameterImpl() throws Exception;
     protected abstract void copyMoveRenameTagImpl() throws Exception;
     protected abstract void deleteTagsImpl() throws Exception;
+    protected abstract void editTagsImpl() throws Exception;
+
 }
