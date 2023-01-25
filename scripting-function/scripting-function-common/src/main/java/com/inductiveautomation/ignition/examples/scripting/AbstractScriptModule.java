@@ -93,6 +93,7 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     protected abstract void editTagsImpl() throws Exception;
     protected abstract void importTagsImpl() throws Exception;
     protected abstract void triggerTagGroupExecutionImpl();
+    protected abstract void queryIntervalImpl();
 
 
 }
