@@ -44,4 +44,11 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.copyMoveRenameTag();
     }
 
+    @Override
+    protected void deleteTagsImpl() throws Exception {
+        rpc. deleteTags();
+    }
+
+
+
 }

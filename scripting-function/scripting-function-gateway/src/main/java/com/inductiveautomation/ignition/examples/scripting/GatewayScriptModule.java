@@ -33,6 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +51,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
     protected int multiplyImpl(int arg0, int arg1) {
         return arg0 * arg1;
     }
-
     @Override
     protected void browseTagsImpl() throws Exception{
         GatewayContext context = GatewayHook.getGatewayContext();
@@ -59,7 +61,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
         browseNode(provider, root);
         logger.info("provider: " + provider);
     }
-
     private void browseNode(TagProvider provider, TagPath parentPath) throws Exception {
         Results<NodeDescription> results = provider.browseAsync(parentPath, BrowseFilter.NONE).get(30, TimeUnit.SECONDS);
 
@@ -282,7 +283,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
-
     protected void writeReadTagValueImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -311,7 +311,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("MemoryTag0 value = " + qvValue);
         }
     }
-
     protected void writeReadTagPropertyImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -340,7 +339,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("MemoryTag1 documentation = " + qvValue);
         }
     }
-
     protected void writeReadUdtParameterImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -415,6 +413,35 @@ public class GatewayScriptModule extends AbstractScriptModule {
         }
 
     }
+    @Override
+    protected void deleteTagsImpl() throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
 
+
+        List<TagPath> toDelete = new ArrayList<>();
+        TagPath levelOne_FolderA = TagPathParser.parse("LevelOne_FolderA");
+        logger.info("Name of the folder to be deleted: " + levelOne_FolderA);
+        toDelete.add(levelOne_FolderA);
+
+        TagPath tinyUdtOverrideInstance = TagPathParser.parse("TinyUdt_OverrideInstance");
+        logger.info("Name of the tag to be deleted: " + tinyUdtOverrideInstance);
+        toDelete.add(tinyUdtOverrideInstance);
+
+
+        List<QualityCode> results = provider.removeTagConfigsAsync(toDelete)
+                .get(30, TimeUnit.SECONDS);
+
+        for (int i = 0; i < results.size(); i++) {
+            QualityCode result = results.get(i);
+            if (result.isNotGood()) {
+                TagPath tagPath = toDelete.get(i);
+                throw new Exception(String.format("Delete tag operation for tag '%s' returned bad result '%s'",
+                        tagPath.toStringFull(), result.toString()));
+            }
+        }
+    }
 
 }
+

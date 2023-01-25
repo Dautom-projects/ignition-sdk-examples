@@ -12,4 +12,5 @@ public interface MathBlackBox {
     public void writeReadTagProperty() throws Exception;
     public void writeReadUdtParameter() throws Exception;
     public void copyMoveRenameTag() throws Exception;
+    public void deleteTags() throws Exception;
 }
