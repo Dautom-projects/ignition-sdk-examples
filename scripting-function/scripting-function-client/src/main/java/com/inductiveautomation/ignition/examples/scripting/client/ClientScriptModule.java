@@ -65,5 +65,10 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.queryInterval();
     }
 
+    @Override
+    protected String runScriptImpl(){
+        return rpc.runScript();
+    }
+
 
 }

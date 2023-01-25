@@ -35,6 +35,8 @@ import com.inductiveautomation.ignition.gateway.sqltags.history.GatewayTagHistor
 import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
 import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
+import org.python.modules._json._json;
+import org.python.modules._py_compile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -750,7 +752,12 @@ public class GatewayScriptModule extends AbstractScriptModule {
 
      */
 
+    @Override
+    protected String runScriptImpl(){
 
+        return "def myFunc(text=\"Hello World!\", moreText=\"Good bye\"):\n" +
+                "\treturn text";
+    }
     }
 
 

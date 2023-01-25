@@ -16,6 +16,6 @@ public interface MathBlackBox {
     public void editTags() throws Exception;
     public  void importTags() throws Exception;
     public void triggerTagGroupExecution();
-
     public void queryInterval();
+    public String runScript();
 }

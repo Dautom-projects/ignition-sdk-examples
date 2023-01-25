@@ -81,6 +81,12 @@ public abstract class AbstractScriptModule implements MathBlackBox {
         queryIntervalImpl();
     }
 
+    @Override
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
+    public String runScript() {
+        return runScriptImpl();
+    }
+
 
     protected abstract int multiplyImpl(int arg0, int arg1);
     protected abstract void browseTagsImpl() throws Exception;
@@ -94,6 +100,7 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     protected abstract void importTagsImpl() throws Exception;
     protected abstract void triggerTagGroupExecutionImpl();
     protected abstract void queryIntervalImpl();
+    protected abstract String runScriptImpl();
 
 
 }
