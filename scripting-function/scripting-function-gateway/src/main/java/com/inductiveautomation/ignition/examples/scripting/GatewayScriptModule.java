@@ -28,6 +28,8 @@ import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -701,6 +703,21 @@ public class GatewayScriptModule extends AbstractScriptModule {
                 + "    }\n"
                 + "  ]\n"
                 + "}";
+    }
+    @Override
+    protected void triggerTagGroupExecutionImpl() {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+        logger.info("provider: " + provider);
+        // Requests an extra execution of the Default tag group
+        if (provider instanceof ProviderContext) {
+            TagGroupManager groupManager = ((ProviderContext) provider).getTagGroupManager();
+            String nameTagProvider = "Default"; //Name tag provider to execution
+            groupManager.requestExecution(nameTagProvider);
+            //groupManager.requestExecution("Default");
+            logger.info("Tag Provider execution: " + nameTagProvider);
+        }
     }
 }
 

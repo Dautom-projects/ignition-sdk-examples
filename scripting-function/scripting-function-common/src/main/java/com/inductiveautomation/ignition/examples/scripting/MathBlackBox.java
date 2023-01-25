@@ -15,4 +15,5 @@ public interface MathBlackBox {
     public void deleteTags() throws Exception;
     public void editTags() throws Exception;
     public  void importTags() throws Exception;
+    public void triggerTagGroupExecution();
 }

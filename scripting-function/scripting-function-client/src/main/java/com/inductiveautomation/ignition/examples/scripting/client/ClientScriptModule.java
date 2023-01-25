@@ -55,5 +55,8 @@ public class ClientScriptModule extends AbstractScriptModule {
     protected void importTagsImpl() throws Exception {
         rpc.importTags();
     }
-
+    @Override
+    protected void triggerTagGroupExecutionImpl(){
+        rpc.triggerTagGroupExecution();
+    }
 }
