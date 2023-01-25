@@ -6,6 +6,7 @@ import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocPro
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.sqltags.history.GatewayTagHistoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,8 @@ public class GatewayHook extends AbstractGatewayModuleHook {
     private final GatewayScriptModule scriptModule = new GatewayScriptModule();
 
     private static GatewayContext gatewayContext;
+
+
 
     @Override
     public void setup(GatewayContext gatewayContext) {

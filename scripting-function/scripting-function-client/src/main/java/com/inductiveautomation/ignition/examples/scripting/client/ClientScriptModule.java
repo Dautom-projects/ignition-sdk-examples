@@ -59,4 +59,5 @@ public class ClientScriptModule extends AbstractScriptModule {
     protected void triggerTagGroupExecutionImpl(){
         rpc.triggerTagGroupExecution();
     }
+
 }

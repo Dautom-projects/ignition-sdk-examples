@@ -1,5 +1,6 @@
 package com.inductiveautomation.ignition.examples.scripting;
 
+import com.inductiveautomation.ignition.common.StreamingDatasetWriter;
 import com.inductiveautomation.ignition.common.alarming.config.*;
 import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
 import com.inductiveautomation.ignition.common.browsing.Results;
@@ -10,6 +11,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.BasicTagPermissions;
+import com.inductiveautomation.ignition.common.sqltags.history.BasicTagHistoryQueryParams;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPermissionsModel;
 import com.inductiveautomation.ignition.common.sqltags.model.scripts.BasicTagEventScripts;
 import com.inductiveautomation.ignition.common.sqltags.model.scripts.TagEventScripts;
@@ -27,7 +29,9 @@ import com.inductiveautomation.ignition.common.tags.model.SecurityContext;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
+import com.inductiveautomation.ignition.gateway.datasource.BasicStreamingDataset;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.sqltags.history.GatewayTagHistoryManager;
 import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
 import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
@@ -719,5 +723,9 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("Tag Provider execution: " + nameTagProvider);
         }
     }
-}
+
+
+
+    }
+
 
