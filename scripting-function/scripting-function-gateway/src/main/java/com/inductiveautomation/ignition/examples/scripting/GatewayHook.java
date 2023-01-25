@@ -12,12 +12,14 @@ import org.slf4j.LoggerFactory;
 public class GatewayHook extends AbstractGatewayModuleHook {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final GatewayScriptModule scriptModule = new GatewayScriptModule();
+
+    private static GatewayContext gatewayContext;
 
     @Override
     public void setup(GatewayContext gatewayContext) {
         logger.info("setup()");
+        GatewayHook.gatewayContext = gatewayContext;
     }
 
     @Override
@@ -43,5 +45,9 @@ public class GatewayHook extends AbstractGatewayModuleHook {
     @Override
     public Object getRPCHandler(ClientReqSession session, String projectName) {
         return scriptModule;
+    }
+
+    public static GatewayContext getGatewayContext() {
+        return gatewayContext;
     }
 }
