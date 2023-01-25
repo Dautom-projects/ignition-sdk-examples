@@ -3,6 +3,9 @@ package com.inductiveautomation.ignition.examples.scripting.client;
 import com.inductiveautomation.ignition.examples.scripting.AbstractScriptModule;
 import com.inductiveautomation.ignition.examples.scripting.MathBlackBox;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
+import com.inductiveautomation.ignition.gateway.datasource.BasicStreamingDataset;
+
+import java.util.Date;
 
 public class ClientScriptModule extends AbstractScriptModule {
 
@@ -58,5 +61,9 @@ public class ClientScriptModule extends AbstractScriptModule {
     @Override
     protected void triggerTagGroupExecutionImpl(){
         rpc.triggerTagGroupExecution();
+    }
+    @Override
+    protected void queryTagHistoryImpl(Date startTime, Date endTime) throws Exception {
+        rpc.queryTagHistory(startTime,endTime);
     }
 }

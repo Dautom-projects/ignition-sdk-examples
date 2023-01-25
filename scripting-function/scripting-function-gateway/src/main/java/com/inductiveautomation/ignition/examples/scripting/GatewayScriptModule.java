@@ -1,5 +1,6 @@
 package com.inductiveautomation.ignition.examples.scripting;
 
+import com.inductiveautomation.ignition.common.Path;
 import com.inductiveautomation.ignition.common.alarming.config.*;
 import com.inductiveautomation.ignition.common.browsing.BrowseFilter;
 import com.inductiveautomation.ignition.common.browsing.Results;
@@ -8,8 +9,8 @@ import com.inductiveautomation.ignition.common.config.BasicProperty;
 import com.inductiveautomation.ignition.common.config.Property;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.inductiveautomation.ignition.common.sqltags.BasicTagPermissions;
+import com.inductiveautomation.ignition.common.sqltags.history.BasicTagHistoryQueryParams;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPermissionsModel;
 import com.inductiveautomation.ignition.common.sqltags.model.scripts.BasicTagEventScripts;
 import com.inductiveautomation.ignition.common.sqltags.model.scripts.TagEventScripts;
@@ -27,23 +28,26 @@ import com.inductiveautomation.ignition.common.tags.model.SecurityContext;
 import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
+import com.inductiveautomation.ignition.gateway.datasource.BasicStreamingDataset;
+import com.inductiveautomation.ignition.gateway.history.HistoryManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.sqltags.history.GatewayTagHistoryManager;
+import com.inductiveautomation.ignition.gateway.sqltags.history.TagHistoryProvider;
 import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
 import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import static com.inductiveautomation.ignition.common.script.builtin.DateUtilities.now;
 
 public class GatewayScriptModule extends AbstractScriptModule {
 
@@ -719,5 +723,41 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("Tag Provider execution: " + nameTagProvider);
         }
     }
-}
 
+    @Override
+    protected void queryTagHistoryImpl(Date startTime,Date endTime) throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagHistoryManager tagHistoryManager = context.getTagHistoryManager();
+        HistoryManager historyManager = context.getHistoryManager();
+        TagHistoryProvider historyProvider = tagHistoryManager.getTagHistoryProvider("scales_simulator");  // Change tag provider name here as needed
+        Path attempt1 = TagPathParser.parse("[scales_simulator]molino a/scale h1/pv_totalweightnoclearable");
+        logger.info("path: " + attempt1);
+
+        List<? extends Path> newPaths = new ArrayList<Path>();
+        logger.info("path list: " + newPaths);
+        newPaths = Arrays.asList(attempt1);
+        //histprov:plant_db:/drv:gw-dau-rd-yield-calculator:scales_simulator:/tag:molino a/scale b1/pv_actualpower
+
+        BasicStreamingDataset dataStream = new BasicStreamingDataset();
+
+        BasicTagHistoryQueryParams newquery = new BasicTagHistoryQueryParams();
+        newquery.setPaths(newPaths);
+        logger.info("newquery path list: " + newquery.getPaths());
+        newquery.setEndDate(endTime);
+        logger.info("newquery enddate: " + newquery.getEndDate());
+        newquery.setStartDate(startTime);
+        logger.info("newquery stardate: " + newquery.getStartDate());
+        /*Change null to set different value
+        newquery.setAliases();
+        logger.info("newquery aliases: " + newquery.getAliases());
+        newquery.setColumnAggregationModes(null);
+        logger.info("newquery agregationmodes: " + newquery.getColumnAggregationModes());
+         */
+        logger.info("newquery: " + newquery);
+
+        tagHistoryManager.queryHistory(newquery,dataStream);
+        logger.info("datastream: " + dataStream);
+        //comando para correr el script en el scriptconsole
+        //system.example.queryTagHistory(system.date.getDate(2023, 0, 25),system.date.getDate(2023, 0, 23))
+    }
+}

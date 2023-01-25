@@ -4,9 +4,11 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.script.hints.ScriptArg;
 import com.inductiveautomation.ignition.common.script.hints.ScriptFunction;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
+import com.inductiveautomation.ignition.gateway.datasource.BasicStreamingDataset;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 import java.io.IOException;
+import java.util.Date;
 
 public abstract class AbstractScriptModule implements MathBlackBox {
 
@@ -74,7 +76,11 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     public void triggerTagGroupExecution() {
         triggerTagGroupExecutionImpl();
     }
-
+    @Override
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
+    public void queryTagHistory(Date startTime,Date endTime) throws Exception{
+        queryTagHistoryImpl(startTime,endTime);
+    }
 
     protected abstract int multiplyImpl(int arg0, int arg1);
     protected abstract void browseTagsImpl() throws Exception;
@@ -87,5 +93,5 @@ public abstract class AbstractScriptModule implements MathBlackBox {
     protected abstract void editTagsImpl() throws Exception;
     protected abstract void importTagsImpl() throws Exception;
     protected abstract void triggerTagGroupExecutionImpl();
-
+    protected abstract void queryTagHistoryImpl(Date startTime, Date endTime) throws Exception;
 }

@@ -1,7 +1,10 @@
 package com.inductiveautomation.ignition.examples.scripting;
 
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
+import com.inductiveautomation.ignition.gateway.datasource.BasicStreamingDataset;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+
+import java.util.Date;
 
 public interface MathBlackBox {
 
@@ -16,4 +19,6 @@ public interface MathBlackBox {
     public void editTags() throws Exception;
     public  void importTags() throws Exception;
     public void triggerTagGroupExecution();
+    public void queryTagHistory (Date startTime, Date endTime) throws Exception;
+
 }
