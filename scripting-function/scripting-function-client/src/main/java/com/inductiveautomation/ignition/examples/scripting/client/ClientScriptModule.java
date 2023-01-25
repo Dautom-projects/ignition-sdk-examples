@@ -60,4 +60,10 @@ public class ClientScriptModule extends AbstractScriptModule {
         rpc.triggerTagGroupExecution();
     }
 
+    @Override
+    protected void queryIntervalImpl(){
+        rpc.queryInterval();
+    }
+
+
 }
