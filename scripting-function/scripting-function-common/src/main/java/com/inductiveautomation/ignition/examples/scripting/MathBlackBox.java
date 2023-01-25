@@ -14,4 +14,5 @@ public interface MathBlackBox {
     public void copyMoveRenameTag() throws Exception;
     public void deleteTags() throws Exception;
     public void editTags() throws Exception;
+    public  void importTags() throws Exception;
 }
