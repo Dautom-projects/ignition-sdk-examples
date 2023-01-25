@@ -43,5 +43,20 @@ public class ClientScriptModule extends AbstractScriptModule {
     protected void copyMoveRenameTagImpl() throws Exception {
         rpc.copyMoveRenameTag();
     }
-
+    @Override
+    protected void deleteTagsImpl() throws Exception {
+        rpc. deleteTags();
+    }
+    @Override
+    protected void editTagsImpl() throws Exception {
+        rpc.editTags();
+    }
+    @Override
+    protected void importTagsImpl() throws Exception {
+        rpc.importTags();
+    }
+    @Override
+    protected void triggerTagGroupExecutionImpl(){
+        rpc.triggerTagGroupExecution();
+    }
 }

@@ -28,11 +28,16 @@ import com.inductiveautomation.ignition.common.tags.model.TagPath;
 import com.inductiveautomation.ignition.common.tags.model.TagProvider;
 import com.inductiveautomation.ignition.common.tags.paths.parser.TagPathParser;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.groups.TagGroupManager;
+import com.inductiveautomation.ignition.gateway.tags.evaluation.providers.ProviderContext;
 import com.inductiveautomation.ignition.gateway.tags.model.GatewayTagManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +53,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
     protected int multiplyImpl(int arg0, int arg1) {
         return arg0 * arg1;
     }
-
     @Override
     protected void browseTagsImpl() throws Exception{
         GatewayContext context = GatewayHook.getGatewayContext();
@@ -59,7 +63,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
         browseNode(provider, root);
         logger.info("provider: " + provider);
     }
-
     private void browseNode(TagProvider provider, TagPath parentPath) throws Exception {
         Results<NodeDescription> results = provider.browseAsync(parentPath, BrowseFilter.NONE).get(30, TimeUnit.SECONDS);
 
@@ -282,7 +285,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             }
         }
     }
-
     protected void writeReadTagValueImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -311,7 +313,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("MemoryTag0 value = " + qvValue);
         }
     }
-
     protected void writeReadTagPropertyImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -340,7 +341,6 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("MemoryTag1 documentation = " + qvValue);
         }
     }
-
     protected void writeReadUdtParameterImpl() throws Exception {
         GatewayContext context = GatewayHook.getGatewayContext();
         GatewayTagManager tagManager = context.getTagManager();
@@ -415,6 +415,309 @@ public class GatewayScriptModule extends AbstractScriptModule {
         }
 
     }
+    @Override
+    protected void deleteTagsImpl() throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
 
 
+        List<TagPath> toDelete = new ArrayList<>();
+        TagPath levelOne_FolderA = TagPathParser.parse("LevelOne_FolderA");
+        logger.info("Name of the folder to be deleted: " + levelOne_FolderA);
+        toDelete.add(levelOne_FolderA);
+
+        TagPath tinyUdtOverrideInstance = TagPathParser.parse("TinyUdt_OverrideInstance");
+        logger.info("Name of the tag to be deleted: " + tinyUdtOverrideInstance);
+        toDelete.add(tinyUdtOverrideInstance);
+
+
+        List<QualityCode> results = provider.removeTagConfigsAsync(toDelete)
+                .get(30, TimeUnit.SECONDS);
+
+        for (int i = 0; i < results.size(); i++) {
+            QualityCode result = results.get(i);
+            if (result.isNotGood()) {
+                TagPath tagPath = toDelete.get(i);
+                throw new Exception(String.format("Delete tag operation for tag '%s' returned bad result '%s'",
+                        tagPath.toStringFull(), result.toString()));
+            }
+        }
+    }
+    @Override
+    protected void editTagsImpl() throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+        logger.info("provider: " + provider);
+
+        TagPath memoryTag0 = TagPathParser.parse("MemoryTag0");
+
+        // MemoryTag0 will be the first item in the returned list. We get back a TagConfigurationModel
+        // that we can modify and send back. Note that if MemoryTag0 doesn't actually exist, the TagConfigurationModel's
+        // TagObjectType will be TagObjectType.Unknown.
+        List<TagConfigurationModel> configs = provider.getTagConfigsAsync(Arrays.asList(memoryTag0), false, true).get(30, TimeUnit.SECONDS);
+        TagConfigurationModel tagConfig = configs.get(0);
+        if (TagObjectType.Unknown == tagConfig.getType()) {
+            throw new Exception("MemoryTag0 edit configuration not found");
+        }
+
+        // Add some documentation to the tag
+        tagConfig.set(WellKnownTagProps.Documentation, "Some documentation for MemoryTag0");
+        logger.info("Documentation: " + tagConfig.get(WellKnownTagProps.Documentation));
+
+        // And now save the tag. Use the MergeOverwrite collision policy to merge in the documentation property but
+        // keep other tag properties intact.
+        List<QualityCode> results = provider.saveTagConfigsAsync(Arrays.asList(tagConfig), CollisionPolicy.MergeOverwrite).get(30, TimeUnit.SECONDS);
+
+        for (int i = 0; i < results.size(); i++) {
+            QualityCode result = results.get(i);
+            if (result.isNotGood()) {
+                throw new Exception(String.format("Edit tag operation returned bad result '%s'", result.toString()));
+            }
+        }
+    }
+    @Override
+    protected void importTagsImpl() throws Exception {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+
+        // Note that it is normally better to import tag json from a File object. We are using Strings here to keep
+        // the example simple.
+        String basicUdtDef = getUdtDefImport(); // name of the methods that return the json of the tags to be imported
+        String udtInstances = getUdtInstancesImport(); //name of the methods that return the json of the tags to be imported
+
+        // Import the definition first
+        TagPath importPath = TagPathParser.parse("_types_");
+        // Using the Ignore collision policy here to make sure we don't accidentally overwrite existing tags.
+        List<QualityCode> results = provider.importTagsAsync(importPath, basicUdtDef, "json", CollisionPolicy.Ignore).get(30, TimeUnit.SECONDS);
+
+        for (int i = 0; i < results.size(); i++) {
+            QualityCode result = results.get(i);
+            if (result.isNotGood()) {
+                throw new Exception(String.format("Add tag operation returned bad result '%s'", result.toString()));
+            }
+            logger.info("Imported tag status: " + result);
+
+        }
+
+        // Then import the instances. Note that if the UDT definitions and instances are in the same tag json import file, then we
+        // don't need to perform two separate imports.
+        importPath = TagPathParser.parse("");
+        results = provider.importTagsAsync(importPath, udtInstances, "json", CollisionPolicy.Ignore)
+                .get(30, TimeUnit.SECONDS);
+
+        for (int i = 0; i < results.size(); i++) {
+            QualityCode result = results.get(i);
+            if (result.isNotGood()) {
+                throw new Exception(String.format("Add tag operation returned bad result '%s'", result.toString()));
+            }
+            logger.info("Imported tag status: " + result);
+
+        }
+    }
+    private String getUdtDefImport() { //method with the tags json
+        return "{\n"
+                + "  \"dataType\": \"Int4\",\n"
+                + "  \"name\": \"BasicUDTDef\",\n"
+                + "  \"value\": 0,\n"
+                + "  \"parameters\": {\n"
+                + "    \"MyParam\": \"paramval\",\n"
+                + "    \"MyIntegerParam\": -1.0\n"
+                + "  },\n"
+                + "  \"tagType\": \"UdtType\",\n"
+                + "  \"tags\": [\n"
+                + "    {\n"
+                + "      \"eventScripts\": [\n"
+                + "        {\n"
+                + "          \"eventid\": \"valueChanged\",\n"
+                + "          \"script\": \"\\tprint \\\"Value changed!\\\"\"\n"
+                + "        }\n"
+                + "      ],\n"
+                + "      \"valueSource\": \"memory\",\n"
+                + "      \"dataType\": \"Int4\",\n"
+                + "      \"name\": \"MemberEventScriptTag\",\n"
+                + "      \"value\": 10,\n"
+                + "      \"tagType\": \"AtomicTag\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"name\": \"UdtFolderLevelOne\",\n"
+                + "      \"tagType\": \"Folder\",\n"
+                + "      \"tags\": [\n"
+                + "        {\n"
+                + "          \"valueSource\": \"memory\",\n"
+                + "          \"dataType\": \"Float4\",\n"
+                + "          \"alarms\": [\n"
+                + "            {\n"
+                + "              \"mode\": \"AboveValue\",\n"
+                + "              \"setpointA\": 100.0,\n"
+                + "              \"name\": \"HighValue\",\n"
+                + "              \"priority\": \"High\"\n"
+                + "            }\n"
+                + "          ],\n"
+                + "          \"name\": \"BasicTypeAlarmTag\",\n"
+                + "          \"value\": 0.5,\n"
+                + "          \"tagType\": \"AtomicTag\"\n"
+                + "        },\n"
+                + "        {\n"
+                + "          \"valueSource\": \"expr\",\n"
+                + "          \"expression\": \"{MyParam}\",\n"
+                + "          \"dataType\": \"String\",\n"
+                + "          \"expressionType\": \"Expression\",\n"
+                + "          \"name\": \"BasicTypeExpressionTag\",\n"
+                + "          \"value\": \"\",\n"
+                + "          \"tagType\": \"AtomicTag\"\n"
+                + "        },\n"
+                + "        {\n"
+                + "          \"name\": \"UdtFolderLevelTwo\",\n"
+                + "          \"tagType\": \"Folder\",\n"
+                + "          \"tags\": [\n"
+                + "            {\n"
+                + "              \"documentation\": {\n"
+                + "                \"bindType\": \"parameter\",\n"
+                + "                \"binding\": \"MyIntegerParam set to {MyIntegerParam}\"\n"
+                + "              },\n"
+                + "              \"tooltip\": {\n"
+                + "                \"bindType\": \"parameter\",\n"
+                + "                \"binding\": \"UDT instance {MyParam}\"\n"
+                + "              },\n"
+                + "              \"valueSource\": \"memory\",\n"
+                + "              \"dataType\": \"Int4\",\n"
+                + "              \"name\": \"LevelTwoMemoryTag\",\n"
+                + "              \"value\": 2,\n"
+                + "              \"tagType\": \"AtomicTag\"\n"
+                + "            }\n"
+                + "          ]\n"
+                + "        }\n"
+                + "      ]\n"
+                + "    }\n"
+                + "  ]\n"
+                + "}";
+    }
+    private String getUdtInstancesImport() { //method with the tags json
+        return "{\n"
+                + "  \"tags\": [\n"
+                + "    {\n"
+                + "      \"dataType\": \"Int4\",\n"
+                + "      \"name\": \"BasicUDT_Instance0\",\n"
+                + "      \"typeId\": \"BasicUDTDef\",\n"
+                + "      \"value\": 0,\n"
+                + "      \"parameters\": {\n"
+                + "        \"MyParam\": \"Param for Basic UDT Instance\",\n"
+                + "        \"MyIntegerParam\": 0.0\n"
+                + "      },\n"
+                + "      \"tagType\": \"UdtInstance\",\n"
+                + "      \"tags\": [\n"
+                + "        {\n"
+                + "          \"name\": \"MemberEventScriptTag\",\n"
+                + "          \"tagType\": \"AtomicTag\"\n"
+                + "        },\n"
+                + "        {\n"
+                + "          \"name\": \"UdtFolderLevelOne\",\n"
+                + "          \"tagType\": \"Folder\",\n"
+                + "          \"tags\": [\n"
+                + "            {\n"
+                + "              \"name\": \"BasicTypeExpressionTag\",\n"
+                + "              \"tagType\": \"AtomicTag\"\n"
+                + "            },\n"
+                + "            {\n"
+                + "              \"name\": \"UdtFolderLevelTwo\",\n"
+                + "              \"tagType\": \"Folder\",\n"
+                + "              \"tags\": [\n"
+                + "                {\n"
+                + "                  \"name\": \"LevelTwoMemoryTag\",\n"
+                + "                  \"tagType\": \"AtomicTag\"\n"
+                + "                }\n"
+                + "              ]\n"
+                + "            },\n"
+                + "            {\n"
+                + "              \"name\": \"BasicTypeAlarmTag\",\n"
+                + "              \"tagType\": \"AtomicTag\"\n"
+                + "            }\n"
+                + "          ]\n"
+                + "        }\n"
+                + "      ]\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"dataType\": \"Int4\",\n"
+                + "      \"name\": \"BasicUDT_OverrideInstance0\",\n"
+                + "      \"typeId\": \"BasicUDTDef\",\n"
+                + "      \"value\": 0,\n"
+                + "      \"parameters\": {\n"
+                + "        \"MyParam\": \"Param for Basic UDT override instance\",\n"
+                + "        \"MyIntegerParam\": 1.0\n"
+                + "      },\n"
+                + "      \"tagType\": \"UdtInstance\",\n"
+                + "      \"tags\": [\n"
+                + "        {\n"
+                + "          \"eventScripts\": [\n"
+                + "            {\n"
+                + "              \"eventid\": \"valueChanged\",\n"
+                + "              \"script\": \"\\tprint \\\"Override: Value changed!\\\"\"\n"
+                + "            }\n"
+                + "          ],\n"
+                + "          \"name\": \"MemberEventScriptTag\",\n"
+                + "          \"tagType\": \"AtomicTag\"\n"
+                + "        },\n"
+                + "        {\n"
+                + "          \"name\": \"UdtFolderLevelOne\",\n"
+                + "          \"tagType\": \"Folder\",\n"
+                + "          \"tags\": [\n"
+                + "            {\n"
+                + "              \"name\": \"UdtFolderLevelTwo\",\n"
+                + "              \"tagType\": \"Folder\",\n"
+                + "              \"tags\": [\n"
+                + "                {\n"
+                + "                  \"value\": \"4\",\n"
+                + "                  \"name\": \"LevelTwoMemoryTag\",\n"
+                + "                  \"tagType\": \"AtomicTag\"\n"
+                + "                }\n"
+                + "              ]\n"
+                + "            },\n"
+                + "            {\n"
+                + "              \"enabled\": false,\n"
+                + "              \"name\": \"BasicTypeExpressionTag\",\n"
+                + "              \"tagType\": \"AtomicTag\"\n"
+                + "            },\n"
+                + "            {\n"
+                + "              \"alarms\": [\n"
+                + "                {\n"
+                + "                  \"mode\": \"AboveValue\",\n"
+                + "                  \"setpointA\": 200.0,\n"
+                + "                  \"name\": \"HighValue\",\n"
+                + "                  \"priority\": \"High\"\n"
+                + "                },\n"
+                + "                {\n"
+                + "                  \"mode\": \"BelowValue\",\n"
+                + "                  \"setpointA\": 10.0,\n"
+                + "                  \"name\": \"LowValue\"\n"
+                + "                }\n"
+                + "              ],\n"
+                + "              \"name\": \"BasicTypeAlarmTag\",\n"
+                + "              \"tagType\": \"AtomicTag\"\n"
+                + "            }\n"
+                + "          ]\n"
+                + "        }\n"
+                + "      ]\n"
+                + "    }\n"
+                + "  ]\n"
+                + "}";
+    }
+    @Override
+    protected void triggerTagGroupExecutionImpl() {
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagManager tagManager = context.getTagManager();
+        TagProvider provider = tagManager.getTagProvider("default");  // Change tag provider name here as needed
+        logger.info("provider: " + provider);
+        // Requests an extra execution of the Default tag group
+        if (provider instanceof ProviderContext) {
+            TagGroupManager groupManager = ((ProviderContext) provider).getTagGroupManager();
+            String nameTagProvider = "Default"; //Name tag provider to execution
+            groupManager.requestExecution(nameTagProvider);
+            //groupManager.requestExecution("Default");
+            logger.info("Tag Provider execution: " + nameTagProvider);
+        }
+    }
 }
+
