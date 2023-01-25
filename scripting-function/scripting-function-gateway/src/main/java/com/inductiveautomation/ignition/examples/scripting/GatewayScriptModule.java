@@ -723,7 +723,32 @@ public class GatewayScriptModule extends AbstractScriptModule {
             logger.info("Tag Provider execution: " + nameTagProvider);
         }
     }
+    //-------------------------------Pruebas tag history---------------------------------------
 
+
+    List<String> lista = new ArrayList<>();
+    String scaleh1 = "[scales_simulator]molino a/scale h1/pv_totalweightnotclearable";
+    String scaleb1 = "[scales_simulator]molino a/scale b1/pv_totalweightnotclearable";
+
+    String[] paths = {scaleh1,scaleb1};
+    String[] Encabezados = {"h1","b1"};
+    List<String> listaPaths = Arrays.asList(paths);
+    List<String> listaEncabezados = Arrays.asList(Encabezados);
+
+
+
+    @Override
+    protected void queryIntervalImpl( /*BasicTagHistoryQueryParams params, StreamingDatasetWriter writer*/){
+
+        GatewayContext context = GatewayHook.getGatewayContext();
+        GatewayTagHistoryManager tagHistoryManager = context.getTagHistoryManager();
+        logger.info("GatewayTagHistoryManager: " + tagHistoryManager);}
+
+    /*
+        //Se realiza la consulta y se almacena el resultado en un BasicStreamingDataset
+        BasicStreamingDataset dataset = tagHistoryManager.queryHistory(params,writer);
+
+     */
 
 
     }
